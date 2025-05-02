@@ -1,0 +1,136 @@
+---
+title: Building CMake projects with Buck2
+---
+
+This post explores how to take a C++ CMake project and build it to using `buck2`.
+
+- [Why do this?](#why-do-this)
+- [My background](#my-background)
+- [Example: `libdivsufsort`](#example-libdivsufsort)
+- [Setup: C++ Project with `libdivsufsort` as a dependency](#setup-c-project-with-libdivsufsort-as-a-dependency)
+- [Switching to buck2](#switching-to-buck2)
+  - [Initialize repo](#initialize-repo)
+  - [genrule for cmake](#genrule-for-cmake)
+  - [Writing the `cmd`](#writing-the-cmd)
+  - [Linking to the binary](#linking-to-the-binary)
+  - [Testing it all works](#testing-it-all-works)
+- [Troubleshooting](#troubleshooting)
+- [TLDR](#tldr)
+
+## Why do this?
+
+My goal that led to this was that I wanted to understand how to switch a C++ project from `cmake` to `buck2`. Doing this incrementally, I can handle most of the vendored dependencies, but a one in particular seemed to be tightly integrated into `cmake` and used a lot of features from `cmake` to generated the final header and library. Instead of figuring out this whole conversion and potentially jumping down a long rabbit hole, I just wanted `buck2` to run `cmake` for that dependency, and hook the output into the rest.
+
+## My background
+
+## Example: `libdivsufsort`
+
+## Setup: C++ Project with `libdivsufsort` as a dependency
+
+## Switching to buck2
+
+### Initialize repo
+
+```bash
+buck2 init --git
+```
+
+### genrule for cmake
+
+```buck
+genrule(
+    name = "libdivsufsort/cmake",
+    srcs = ["."],
+    cmd = "echo TODO >$OUT"
+    out = "TODO.txt"
+)
+```
+
+### Writing the `cmd`
+
+```diff
+genrule(
+    name = "libdivsufsort/cmake",
+-   srcs = ["."],
++   srcs = ["libdivsufsort"],
+-   cmd = "echo TODO >$OUT"
++   cmd = """
++OUT=$PWD/$OUT
++cp -rL $SRCS $TMP
++(
++   $TMP/libdivsufsort
++   mkdir build
++   cd build
++   cmake ..
++   make
++   make install
++   
++)
+-   out = "TODO.txt"
++   outs = {
++       "header": ["include/divsufsort.h"],
++       "lib": ["lib/libdivsufsort.a"],
++       "lib64": ["lib/libdivsufsort64.a"],
++   }
+)
+```
+
+### Linking to the binary
+
+```buck2
+# BUCK
+cxx_library(
+    name = "libdivsufsort",
+    exported_headers = [":libdivsufsort/cmake[header]"],
+    public_include_directories = [":libdivsufsort/cmake[header]"],
+    exported_linker_flags = [
+        "$(location :libdivsufsort/cmake[lib])",
+        "$(location :libdivsufsort/cmake[lib64])",
+    ]
+)
+```
+
+### Testing it all works
+
+```cpp
+// test.cpp
+#include <iostream>
+#include "libdivsufsort.h"
+
+int main(void) {
+    // TODO copy from example
+}
+```
+
+```buck2
+# BUCK
+cxx_binary(
+    name = "test",
+    srcs = ["test.cpp"],
+    deps = [":libdivsufsort"]
+)
+```
+
+```bash
+$ buck2 build :test --show-output
+$ buck-out/v2/gen/root/200212f73efcd57d/__DYNAMIC/test__/DYNAMIC/test
+SA[ 0] = 10: a$
+SA[ 1] =  7: abra$
+SA[ 2] =  0: abracadabra$
+SA[ 3] =  3: acadabra$
+SA[ 4] =  5: adabra$
+SA[ 5] =  8: bra$
+SA[ 6] =  1: bracadabra$
+SA[ 7] =  4: cadabra$
+SA[ 8] =  6: dabra$
+SA[ 9] =  9: ra$
+SA[10] =  2: racadabra$
+```
+
+## Troubleshooting
+Notes about things that went wrong and how I fixed them
+
+- `buck2` is too good at caching things, and changes in the the `BUCK` are sometimes not reflected in `buck2 build`, and usually if I'm iterating on the `BUCK` file I need to force it to look at the updated `BUCK` file. To do this, I usually need to run `buck2 killall` to force it to re-read the `BUCK` file.
+- Target patterns (e.g. ":libdivsufsort") and string parameter macros (e.g. "$(location :libdivsufsort[header]")) can't be used in all parameters for rules. If the compiler is complaining about finding files, undefined references, etc. Look at the argfiles that `buck2` generates and see if it is getting expanded correctly.
+
+## TLDR

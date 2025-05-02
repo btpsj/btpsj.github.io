@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>My Hakyll Blog - Building CMake projects with Buck2</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+    </head>
+    <body>
+        <div id="header">
+            <div id="logo">
+                <a href="../">My Hakyll Blog</a>
+            </div>
+            <div id="navigation">
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../archive.html">Archive</a>
+            </div>
+        </div>
+
+        <div id="content">
+            <h1>Building CMake projects with Buck2</h1>
+
+            <div class="info">
+    Posted on May  1, 2025
+    
+</div>
+
+<p>This post explores how to take a C++ CMake project and build it to using <code>buck2</code>.</p>
+<ul>
+<li><a href="#why-do-this">Why do this?</a></li>
+<li><a href="#my-background">My background</a></li>
+<li><a href="#example-libdivsufsort">Example: <code>libdivsufsort</code></a></li>
+<li><a href="#setup-c-project-with-libdivsufsort-as-a-dependency">Setup: C++ Project with <code>libdivsufsort</code> as a dependency</a></li>
+<li><a href="#switching-to-buck2">Switching to buck2</a>
+<ul>
+<li><a href="#initialize-repo">Initialize repo</a></li>
+<li><a href="#genrule-for-cmake">genrule for cmake</a></li>
+<li><a href="#writing-the-cmd">Writing the <code>cmd</code></a></li>
+<li><a href="#linking-to-the-binary">Linking to the binary</a></li>
+<li><a href="#testing-it-all-works">Testing it all works</a></li>
+</ul></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#tldr">TLDR</a></li>
+</ul>
+<h2 id="why-do-this">Why do this?</h2>
+<p>My goal that led to this was that I wanted to understand how to switch a C++ project from <code>cmake</code> to <code>buck2</code>. Doing this incrementally, I can handle most of the vendored dependencies, but a one in particular seemed to be tightly integrated into <code>cmake</code> and used a lot of features from <code>cmake</code> to generated the final header and library. Instead of figuring out this whole conversion and potentially jumping down a long rabbit hole, I just wanted <code>buck2</code> to run <code>cmake</code> for that dependency, and hook the output into the rest.</p>
+<h2 id="my-background">My background</h2>
+<h2 id="example-libdivsufsort">Example: <code>libdivsufsort</code></h2>
+<h2 id="setup-c-project-with-libdivsufsort-as-a-dependency">Setup: C++ Project with <code>libdivsufsort</code> as a dependency</h2>
+<h2 id="switching-to-buck2">Switching to buck2</h2>
+<h3 id="initialize-repo">Initialize repo</h3>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">buck2</span> init <span class="at">--git</span></span></code></pre></div>
+<h3 id="genrule-for-cmake">genrule for cmake</h3>
+<pre class="buck"><code>genrule(
+    name = &quot;libdivsufsort/cmake&quot;,
+    srcs = [&quot;.&quot;],
+    cmd = &quot;echo TODO &gt;$OUT&quot;
+    out = &quot;TODO.txt&quot;
+)</code></pre>
+<h3 id="writing-the-cmd">Writing the <code>cmd</code></h3>
+<div class="sourceCode" id="cb3"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>genrule(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    name = &quot;libdivsufsort/cmake&quot;,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">-   srcs = [&quot;.&quot;],</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="va">+   srcs = [&quot;libdivsufsort&quot;],</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="st">-   cmd = &quot;echo TODO &gt;$OUT&quot;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="va">+   cmd = &quot;&quot;&quot;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="va">+OUT=$PWD/$OUT</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="va">+cp -rL $SRCS $TMP</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="va">+(</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="va">+   $TMP/libdivsufsort</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="va">+   mkdir build</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="va">+   cd build</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="va">+   cmake ..</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="va">+   make</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="va">+   make install</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="va">+   </span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="va">+)</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="st">-   out = &quot;TODO.txt&quot;</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="va">+   outs = {</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="va">+       &quot;header&quot;: [&quot;include/divsufsort.h&quot;],</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="va">+       &quot;lib&quot;: [&quot;lib/libdivsufsort.a&quot;],</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="va">+       &quot;lib64&quot;: [&quot;lib/libdivsufsort64.a&quot;],</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="va">+   }</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<h3 id="linking-to-the-binary">Linking to the binary</h3>
+<pre class="buck2"><code># BUCK
+cxx_library(
+    name = &quot;libdivsufsort&quot;,
+    exported_headers = [&quot;:libdivsufsort/cmake[header]&quot;],
+    public_include_directories = [&quot;:libdivsufsort/cmake[header]&quot;],
+    exported_linker_flags = [
+        &quot;$(location :libdivsufsort/cmake[lib])&quot;,
+        &quot;$(location :libdivsufsort/cmake[lib64])&quot;,
+    ]
+)</code></pre>
+<h3 id="testing-it-all-works">Testing it all works</h3>
+<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// test.cpp</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&quot;libdivsufsort.h&quot;</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// </span><span class="al">TODO</span><span class="co"> copy from example</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<pre class="buck2"><code># BUCK
+cxx_binary(
+    name = &quot;test&quot;,
+    srcs = [&quot;test.cpp&quot;],
+    deps = [&quot;:libdivsufsort&quot;]
+)</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> buck2 build :test <span class="at">--show-output</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> buck-out/v2/gen/root/200212f73efcd57d/__DYNAMIC/test__/DYNAMIC/test</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 0<span class="op">]</span> <span class="ex">=</span> 10: a$</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 1<span class="op">]</span> <span class="ex">=</span>  7: abra$</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 2<span class="op">]</span> <span class="ex">=</span>  0: abracadabra$</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 3<span class="op">]</span> <span class="ex">=</span>  3: acadabra$</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 4<span class="op">]</span> <span class="ex">=</span>  5: adabra$</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 5<span class="op">]</span> <span class="ex">=</span>  8: bra$</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 6<span class="op">]</span> <span class="ex">=</span>  1: bracadabra$</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 7<span class="op">]</span> <span class="ex">=</span>  4: cadabra$</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 8<span class="op">]</span> <span class="ex">=</span>  6: dabra$</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 9<span class="op">]</span> <span class="ex">=</span>  9: ra$</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span><span class="dv">10</span><span class="op">]</span> <span class="ex">=</span>  2: racadabra$</span></code></pre></div>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p>Notes about things that went wrong and how I fixed them</p>
+<ul>
+<li><code>buck2</code> is too good at caching things, and changes in the the <code>BUCK</code> are sometimes not reflected in <code>buck2 build</code>, and usually if I’m iterating on the <code>BUCK</code> file I need to force it to look at the updated <code>BUCK</code> file. To do this, I usually need to run <code>buck2 killall</code> to force it to re-read the <code>BUCK</code> file.</li>
+<li>Target patterns (e.g. “:libdivsufsort”) and string parameter macros (e.g. “$(location :libdivsufsort[header]”)) can’t be used in all parameters for rules. If the compiler is complaining about finding files, undefined references, etc. Look at the argfiles that <code>buck2</code> generates and see if it is getting expanded correctly.</li>
+</ul>
+<h2 id="tldr">TLDR</h2>
+
+        </div>
+        <div id="footer">
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </div>
+    </body>
+</html>
