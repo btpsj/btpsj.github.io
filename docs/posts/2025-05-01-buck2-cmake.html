@@ -39,8 +39,7 @@
 <li><a href="#switching-to-buck2">Switching to buck2</a>
 <ul>
 <li><a href="#initialize-repo">Initialize repo</a></li>
-<li><a href="#genrule-for-cmake">genrule for cmake</a></li>
-<li><a href="#writing-the-cmd">Writing the <code>cmd</code></a></li>
+<li><a href="#writing-the-genrule">Writing the <code>genrule</code></a></li>
 <li><a href="#linking-to-the-binary">Linking to the binary</a></li>
 <li><a href="#testing-it-all-works">Testing it all works</a></li>
 </ul></li>
@@ -55,83 +54,161 @@
 <h2 id="switching-to-buck2">Switching to buck2</h2>
 <h3 id="initialize-repo">Initialize repo</h3>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">buck2</span> init <span class="at">--git</span></span></code></pre></div>
-<h3 id="genrule-for-cmake">genrule for cmake</h3>
-<pre class="buck"><code>genrule(
-    name = &quot;libdivsufsort/cmake&quot;,
-    srcs = [&quot;.&quot;],
-    cmd = &quot;echo TODO &gt;$OUT&quot;
-    out = &quot;TODO.txt&quot;
-)</code></pre>
-<h3 id="writing-the-cmd">Writing the <code>cmd</code></h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>genrule(</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    name = &quot;libdivsufsort/cmake&quot;,</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">-   srcs = [&quot;.&quot;],</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="va">+   srcs = [&quot;libdivsufsort&quot;],</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="st">-   cmd = &quot;echo TODO &gt;$OUT&quot;</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="va">+   cmd = &quot;&quot;&quot;</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="va">+OUT=$PWD/$OUT</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="va">+cp -rL $SRCS $TMP</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="va">+(</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="va">+   $TMP/libdivsufsort</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="va">+   mkdir build</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="va">+   cd build</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="va">+   cmake ..</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="va">+   make</span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="va">+   make install</span></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="va">+   </span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="va">+)</span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="st">-   out = &quot;TODO.txt&quot;</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="va">+   outs = {</span></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="va">+       &quot;header&quot;: [&quot;include/divsufsort.h&quot;],</span></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="va">+       &quot;lib&quot;: [&quot;lib/libdivsufsort.a&quot;],</span></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="va">+       &quot;lib64&quot;: [&quot;lib/libdivsufsort64.a&quot;],</span></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="va">+   }</span></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<h3 id="writing-the-genrule">Writing the <code>genrule</code></h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode diff"><code class="sourceCode diff"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>genrule(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    name = &quot;libdivsufsort/cmake&quot;,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    srcs = [</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        &quot;examples&quot;, &quot;include&quot;, &quot;lib&quot;,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        &quot;CMakeLists.txt&quot;, &quot;VERSION.cmake&quot;,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        &quot;CMakeModules&quot;, &quot;pkgconfig&quot;,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        &quot;LICENSE&quot;, &quot;README.md&quot;,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    ],</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    cmd =</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>&quot;&quot;&quot;</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>OUT=$PWD/$OUT</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>cp -rL $SRCS $TMP</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>cd $TMP</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>mkdir build</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>cd build</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>cmake -DCMAKE_INSTALL_PREFIX=$OUT \</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    -DBUILD_SHARED_LIBS=OFF \</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    -DCMAKE_BUILD_EXAMPLES=OFF \</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    -DCMAKE_BUILD_TYPE=Release \</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    ..</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>make &amp;&amp; make install</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>cp -L include/lfs.h $OUT/include/lfs.h</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>&quot;&quot;&quot;,</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    outs = {</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>        &quot;divsufsort.h&quot;: [&quot;include/divsufsort.h&quot;],</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>        &quot;lfs.h&quot;: [&quot;include/lfs.h&quot;],</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>        &quot;lib&quot;: [&quot;lib/libdivsufsort.a&quot;],</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 <h3 id="linking-to-the-binary">Linking to the binary</h3>
 <pre class="buck2"><code># BUCK
+export_file(
+    name = &quot;libdivsufsort/header/divsufsort.h&quot;,
+    src = &quot;:libdivsufsort/cmake[divsufsort.h]&quot;,
+    out = &quot;divsufsort.h&quot;,
+)
+
+export_file(
+    name = &quot;libdivsufsort/header/lfs.h&quot;,
+    src = &quot;:libdivsufsort/cmake[lfs.h]&quot;,
+    out = &quot;lfs.h&quot;,
+)
+
 cxx_library(
     name = &quot;libdivsufsort&quot;,
-    exported_headers = [&quot;:libdivsufsort/cmake[header]&quot;],
-    public_include_directories = [&quot;:libdivsufsort/cmake[header]&quot;],
-    exported_linker_flags = [
-        &quot;$(location :libdivsufsort/cmake[lib])&quot;,
-        &quot;$(location :libdivsufsort/cmake[lib64])&quot;,
-    ]
+    exported_headers = [
+        &quot;:libdivsufsort/header/lfs.h&quot;,
+        &quot;:libdivsufsort/header/divsufsort.h&quot;
+    ],
+    public_include_directories = [
+        &quot;:libdivsufsort/header/lfs.h&quot;,
+        &quot;:libdivsufsort/header/divsufsort.h&quot;
+    ],
+    exported_linker_flags = [&quot;$(location :libdivsufsort/cmake[lib])&quot;],
 )</code></pre>
 <h3 id="testing-it-all-works">Testing it all works</h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// test.cpp</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;iostream&gt;</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&quot;libdivsufsort.h&quot;</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">// </span><span class="al">TODO</span><span class="co"> copy from example</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>To confirm that everything links, lets grab an example that links our buck-cmake library and runs. An example from the repo’s <code>README</code>.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// example.cpp</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdlib.h&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;string.h&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;divsufsort.h&gt;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">()</span> <span class="op">{</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">// intput data</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">char</span> <span class="op">*</span>Text <span class="op">=</span> <span class="st">&quot;abracadabra&quot;</span><span class="op">;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> n <span class="op">=</span> strlen<span class="op">(</span>Text<span class="op">);</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> i<span class="op">,</span> j<span class="op">;</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">// allocate</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> <span class="op">*</span>SA <span class="op">=</span> <span class="op">(</span><span class="dt">int</span> <span class="op">*)</span>malloc<span class="op">(</span>n <span class="op">*</span> <span class="kw">sizeof</span><span class="op">(</span><span class="dt">int</span><span class="op">));</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="co">// sort</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    divsufsort<span class="op">((</span><span class="dt">unsigned</span> <span class="dt">char</span> <span class="op">*)</span>Text<span class="op">,</span> SA<span class="op">,</span> n<span class="op">);</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="co">// output</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span><span class="op">(</span>i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>i<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>        printf<span class="op">(</span><span class="st">&quot;SA[</span><span class="sc">%2d</span><span class="st">] = </span><span class="sc">%2d</span><span class="st">: &quot;</span><span class="op">,</span> i<span class="op">,</span> SA<span class="op">[</span>i<span class="op">]);</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span><span class="op">(</span>j <span class="op">=</span> SA<span class="op">[</span>i<span class="op">];</span> j <span class="op">&lt;</span> n<span class="op">;</span> <span class="op">++</span>j<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>            printf<span class="op">(</span><span class="st">&quot;</span><span class="sc">%c</span><span class="st">&quot;</span><span class="op">,</span> Text<span class="op">[</span>j<span class="op">]);</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>        printf<span class="op">(</span><span class="st">&quot;$</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">);</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="co">// deallocate</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    free<span class="op">(</span>SA<span class="op">);</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>The buck2 rule that depends on our example.</p>
 <pre class="buck2"><code># BUCK
 cxx_binary(
-    name = &quot;test&quot;,
-    srcs = [&quot;test.cpp&quot;],
-    deps = [&quot;:libdivsufsort&quot;]
+    name = &quot;example&quot;,
+    srcs = [&quot;example.cpp&quot;],
+    deps = [&quot;:libdivsufsort&quot;],
 )</code></pre>
-<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> buck2 build :test <span class="at">--show-output</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> buck-out/v2/gen/root/200212f73efcd57d/__DYNAMIC/test__/DYNAMIC/test</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 0<span class="op">]</span> <span class="ex">=</span> 10: a$</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 1<span class="op">]</span> <span class="ex">=</span>  7: abra$</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 2<span class="op">]</span> <span class="ex">=</span>  0: abracadabra$</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 3<span class="op">]</span> <span class="ex">=</span>  3: acadabra$</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 4<span class="op">]</span> <span class="ex">=</span>  5: adabra$</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 5<span class="op">]</span> <span class="ex">=</span>  8: bra$</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 6<span class="op">]</span> <span class="ex">=</span>  1: bracadabra$</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 7<span class="op">]</span> <span class="ex">=</span>  4: cadabra$</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 8<span class="op">]</span> <span class="ex">=</span>  6: dabra$</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 9<span class="op">]</span> <span class="ex">=</span>  9: ra$</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span><span class="dv">10</span><span class="op">]</span> <span class="ex">=</span>  2: racadabra$</span></code></pre></div>
+<p>And building and running our example with buck2.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> buck2 run :example <span class="at">--show-output</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 0<span class="op">]</span> <span class="ex">=</span> 10: a$</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 1<span class="op">]</span> <span class="ex">=</span>  7: abra$</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 2<span class="op">]</span> <span class="ex">=</span>  0: abracadabra$</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 3<span class="op">]</span> <span class="ex">=</span>  3: acadabra$</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 4<span class="op">]</span> <span class="ex">=</span>  5: adabra$</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 5<span class="op">]</span> <span class="ex">=</span>  8: bra$</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 6<span class="op">]</span> <span class="ex">=</span>  1: bracadabra$</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 7<span class="op">]</span> <span class="ex">=</span>  4: cadabra$</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 8<span class="op">]</span> <span class="ex">=</span>  6: dabra$</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span> 9<span class="op">]</span> <span class="ex">=</span>  9: ra$</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="va">SA</span><span class="op">[</span><span class="dv">10</span><span class="op">]</span> <span class="ex">=</span>  2: racadabra$</span></code></pre></div>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <p>Notes about things that went wrong and how I fixed them</p>
 <ul>
-<li><code>buck2</code> is too good at caching things, and changes in the the <code>BUCK</code> are sometimes not reflected in <code>buck2 build</code>, and usually if I’m iterating on the <code>BUCK</code> file I need to force it to look at the updated <code>BUCK</code> file. To do this, I usually need to run <code>buck2 killall</code> to force it to re-read the <code>BUCK</code> file.</li>
+<li>To avoid caching and iterate on BUCK, preprend any <code>buck2 build</code> commands with <code>buck2 killall</code>.</li>
 <li>Target patterns (e.g. “:libdivsufsort”) and string parameter macros (e.g. “$(location :libdivsufsort[header]”)) can’t be used in all parameters for rules. If the compiler is complaining about finding files, undefined references, etc. Look at the argfiles that <code>buck2</code> generates and see if it is getting expanded correctly.</li>
 </ul>
 <h2 id="tldr">TLDR</h2>
+<p><a href="https://github.com/bsaintjo/libdivsufsort">Github Fork with buck2 build</a>.</p>
+<p>Full <code>BUCK</code> file</p>
+<pre class="buck2"><code>genrule(
+    name = &quot;libdivsufsort/cmake&quot;,
+    srcs = [
+        &quot;examples&quot;, &quot;include&quot;, &quot;lib&quot;,
+        &quot;CMakeLists.txt&quot;, &quot;VERSION.cmake&quot;,
+        &quot;CMakeModules&quot;, &quot;pkgconfig&quot;,
+        &quot;LICENSE&quot;, &quot;README.md&quot;,
+    ],
+    cmd =
+&quot;&quot;&quot;
+OUT=$PWD/$OUT
+cp -rL $SRCS $TMP
+
+cd $TMP
+mkdir build
+cd build
+
+cmake -DCMAKE_INSTALL_PREFIX=$OUT \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DCMAKE_BUILD_EXAMPLES=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
+    ..
+make &amp;&amp; make install
+cp -L include/lfs.h $OUT/include/lfs.h
+&quot;&quot;&quot;,
+    outs = {
+        &quot;divsufsort.h&quot;: [&quot;include/divsufsort.h&quot;],
+        &quot;lfs.h&quot;: [&quot;include/lfs.h&quot;],
+        &quot;lib&quot;: [&quot;lib/libdivsufsort.a&quot;],
+    }
+)</code></pre>
 
         </div>
         <div id="footer">

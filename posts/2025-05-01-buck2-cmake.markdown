@@ -10,8 +10,7 @@ This post explores how to take a C++ CMake project and build it to using `buck2`
 - [Setup: C++ Project with `libdivsufsort` as a dependency](#setup-c-project-with-libdivsufsort-as-a-dependency)
 - [Switching to buck2](#switching-to-buck2)
   - [Initialize repo](#initialize-repo)
-  - [genrule for cmake](#genrule-for-cmake)
-  - [Writing the `cmd`](#writing-the-cmd)
+  - [Writing the `genrule`](#writing-the-genrule)
   - [Linking to the binary](#linking-to-the-binary)
   - [Testing it all works](#testing-it-all-works)
 - [Troubleshooting](#troubleshooting)
@@ -35,43 +34,40 @@ My goal that led to this was that I wanted to understand how to switch a C++ pro
 buck2 init --git
 ```
 
-### genrule for cmake
-
-```buck
-genrule(
-    name = "libdivsufsort/cmake",
-    srcs = ["."],
-    cmd = "echo TODO >$OUT"
-    out = "TODO.txt"
-)
-```
-
-### Writing the `cmd`
+### Writing the `genrule`
 
 ```diff
 genrule(
     name = "libdivsufsort/cmake",
--   srcs = ["."],
-+   srcs = ["libdivsufsort"],
--   cmd = "echo TODO >$OUT"
-+   cmd = """
-+OUT=$PWD/$OUT
-+cp -rL $SRCS $TMP
-+(
-+   $TMP/libdivsufsort
-+   mkdir build
-+   cd build
-+   cmake ..
-+   make
-+   make install
-+   
-+)
--   out = "TODO.txt"
-+   outs = {
-+       "header": ["include/divsufsort.h"],
-+       "lib": ["lib/libdivsufsort.a"],
-+       "lib64": ["lib/libdivsufsort64.a"],
-+   }
+    srcs = [
+        "examples", "include", "lib",
+        "CMakeLists.txt", "VERSION.cmake",
+        "CMakeModules", "pkgconfig",
+        "LICENSE", "README.md",
+    ],
+    cmd =
+"""
+OUT=$PWD/$OUT
+cp -rL $SRCS $TMP
+
+cd $TMP
+mkdir build
+cd build
+
+cmake -DCMAKE_INSTALL_PREFIX=$OUT \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DCMAKE_BUILD_EXAMPLES=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
+    ..
+make && make install
+cp -L include/lfs.h $OUT/include/lfs.h
+""",
+    outs = {
+        "divsufsort.h": ["include/divsufsort.h"],
+        "lfs.h": ["include/lfs.h"],
+        "lib": ["lib/libdivsufsort.a"],
+    }
 )
 ```
 
@@ -79,41 +75,87 @@ genrule(
 
 ```buck2
 # BUCK
+export_file(
+    name = "libdivsufsort/header/divsufsort.h",
+    src = ":libdivsufsort/cmake[divsufsort.h]",
+    out = "divsufsort.h",
+)
+
+export_file(
+    name = "libdivsufsort/header/lfs.h",
+    src = ":libdivsufsort/cmake[lfs.h]",
+    out = "lfs.h",
+)
+
 cxx_library(
     name = "libdivsufsort",
-    exported_headers = [":libdivsufsort/cmake[header]"],
-    public_include_directories = [":libdivsufsort/cmake[header]"],
-    exported_linker_flags = [
-        "$(location :libdivsufsort/cmake[lib])",
-        "$(location :libdivsufsort/cmake[lib64])",
-    ]
+    exported_headers = [
+        ":libdivsufsort/header/lfs.h",
+        ":libdivsufsort/header/divsufsort.h"
+    ],
+    public_include_directories = [
+        ":libdivsufsort/header/lfs.h",
+        ":libdivsufsort/header/divsufsort.h"
+    ],
+    exported_linker_flags = ["$(location :libdivsufsort/cmake[lib])"],
 )
 ```
 
 ### Testing it all works
 
-```cpp
-// test.cpp
-#include <iostream>
-#include "libdivsufsort.h"
+To confirm that everything links, lets grab an example that links our buck-cmake library and runs. An example from the repo's `README`.
 
-int main(void) {
-    // TODO copy from example
+```cpp
+// example.cpp
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <divsufsort.h>
+
+int main() {
+    // intput data
+    char *Text = "abracadabra";
+    int n = strlen(Text);
+    int i, j;
+
+    // allocate
+    int *SA = (int *)malloc(n * sizeof(int));
+
+    // sort
+    divsufsort((unsigned char *)Text, SA, n);
+
+    // output
+    for(i = 0; i < n; ++i) {
+        printf("SA[%2d] = %2d: ", i, SA[i]);
+        for(j = SA[i]; j < n; ++j) {
+            printf("%c", Text[j]);
+        }
+        printf("$\n");
+    }
+
+    // deallocate
+    free(SA);
+
+    return 0;
 }
 ```
+
+The buck2 rule that depends on our example.
 
 ```buck2
 # BUCK
 cxx_binary(
-    name = "test",
-    srcs = ["test.cpp"],
-    deps = [":libdivsufsort"]
+    name = "example",
+    srcs = ["example.cpp"],
+    deps = [":libdivsufsort"],
 )
 ```
 
+And building and running our example with buck2.
+
 ```bash
-$ buck2 build :test --show-output
-$ buck-out/v2/gen/root/200212f73efcd57d/__DYNAMIC/test__/DYNAMIC/test
+$ buck2 run :example --show-output
 SA[ 0] = 10: a$
 SA[ 1] =  7: abra$
 SA[ 2] =  0: abracadabra$
@@ -128,9 +170,49 @@ SA[10] =  2: racadabra$
 ```
 
 ## Troubleshooting
+
 Notes about things that went wrong and how I fixed them
 
-- `buck2` is too good at caching things, and changes in the the `BUCK` are sometimes not reflected in `buck2 build`, and usually if I'm iterating on the `BUCK` file I need to force it to look at the updated `BUCK` file. To do this, I usually need to run `buck2 killall` to force it to re-read the `BUCK` file.
+- To avoid caching and iterate on BUCK, preprend any `buck2 build` commands with `buck2 killall`.
 - Target patterns (e.g. ":libdivsufsort") and string parameter macros (e.g. "$(location :libdivsufsort[header]")) can't be used in all parameters for rules. If the compiler is complaining about finding files, undefined references, etc. Look at the argfiles that `buck2` generates and see if it is getting expanded correctly.
 
 ## TLDR
+
+[Github Fork with buck2 build](https://github.com/bsaintjo/libdivsufsort).
+
+Full `BUCK` file
+
+```buck2
+genrule(
+    name = "libdivsufsort/cmake",
+    srcs = [
+        "examples", "include", "lib",
+        "CMakeLists.txt", "VERSION.cmake",
+        "CMakeModules", "pkgconfig",
+        "LICENSE", "README.md",
+    ],
+    cmd =
+"""
+OUT=$PWD/$OUT
+cp -rL $SRCS $TMP
+
+cd $TMP
+mkdir build
+cd build
+
+cmake -DCMAKE_INSTALL_PREFIX=$OUT \
+    -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DCMAKE_BUILD_EXAMPLES=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
+    ..
+make && make install
+cp -L include/lfs.h $OUT/include/lfs.h
+""",
+    outs = {
+        "divsufsort.h": ["include/divsufsort.h"],
+        "lfs.h": ["include/lfs.h"],
+        "lib": ["lib/libdivsufsort.a"],
+    }
+)
+```
