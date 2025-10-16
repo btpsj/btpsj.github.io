@@ -5,7 +5,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>blog :: (Science a, Programming a) => a - Home</title>
+    <title>blog :: (Science a, Programming a) => a - Genomic Data Lakehouse with Apache Arrow</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/default.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
@@ -18,13 +18,13 @@
         <div class="navbar has-background-grey-darker" id="header">
             <div class="navbar-start">
                 <div class="navbar-brand" id="logo">
-                    <a class="navbar-item is-family-code" href="./">blog :: (Science a, Programming a) => a </a>
+                    <a class="navbar-item is-family-code" href="../">blog :: (Science a, Programming a) => a </a>
                 </div>
             </div>
             <div class="navbar-end">
                 <div class="navbar-menu" id="navigation">
 
-                    <a class="navbar-item" href="./">
+                    <a class="navbar-item" href="../">
                         <span class="icon-text">
                             <span class="icon">
                                 <i class="fa fa-home"></i>
@@ -51,7 +51,7 @@
                         </span>
                     </a>
 
-                    <a class="navbar-item" href="./archive.html">
+                    <a class="navbar-item" href="../archive.html">
                         <span class="icon-text">
                             <span class="icon">
                                 <i class="fa fa-folder"></i>
@@ -65,29 +65,49 @@
 
         <div id="content" class="container is-max-tablet mt-6 mb-6">
             <div class="title is-spaced" id="title">
-                Home
+                Genomic Data Lakehouse with Apache Arrow
             </div>
 
-            <div class="content is-medium">
-    <p>Welcome to my blog!</p>
-
-    <h4>Posts</h4>
-    <div class="content">
-    <ul>
-        
-        <li>
-            <a href="./posts/2025-10-14-genomic-data-lakehouse.html">Genomic Data Lakehouse with Apache Arrow</a> - October 14, 2025
-        </li>
-        
-        <li>
-            <a href="./posts/2015-08-23-example.html">example post</a> - August 23, 2015
-        </li>
-        
-    </ul>
+            <div class="subtitle">
+    Posted on October 14, 2025
+    
+    <p>by Brandon Saint-John</p>
+    
 </div>
 
-    <p>…or you can find more in the <a href="./archive.html">archives</a>.</p>
-
+<div class="content container">
+    <h2 id="outline">Outline</h2>
+<ul>
+<li>why
+<ul>
+<li>Record as the unit of work</li>
+<li>Don’t care about metadata (most of the time)</li>
+<li>samtools/bedtools/etc.</li>
+</ul></li>
+<li>why not
+<ul>
+<li>yet another format</li>
+<li>integration with existing tooling (oxbow-writer)</li>
+<li>Apache Arrow is a recommendation, not a specification</li>
+</ul></li>
+<li>Data Lakehouse + Apache Arrow</li>
+<li>oxbow</li>
+<li>oxbow writer</li>
+</ul>
+<h3 id="tutorial">Tutorial</h3>
+<ul>
+<li>diagram here</li>
+<li>minio s3</li>
+<li>snakemake</li>
+<li>docker container and github link</li>
+</ul>
+<h2 id="prior-art">Prior art</h2>
+<ul>
+<li><a href="https://github.com/wheretrue/exon">exon</a></li>
+<li><a href="https://github.com/abdenlab/oxbow?tab=readme-ov-file">oxbow</a></li>
+<li><a href="https://biodatageeks.org/polars-bio/api/">polars-bio</a></li>
+<li><a href="https://ieeexplore.ieee.org/document/9096725">arrowSam</a></li>
+</ul>
 </div>
         </div>
         <div class="footer mt-auto has-text-centered">
