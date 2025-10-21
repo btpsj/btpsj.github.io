@@ -5,7 +5,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>blog :: (Science a, Programming a) => a - Home</title>
+    <title>blog :: (Science a, Programming a) => a - Translating Bonito Nanopore Basecalling Models into Rust and the candle ML framework</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/default.min.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
@@ -18,13 +18,13 @@
         <div class="navbar has-background-grey-darker" id="header">
             <div class="navbar-start">
                 <div class="navbar-brand" id="logo">
-                    <a class="navbar-item is-family-code" href="./">blog :: (Science a, Programming a) => a </a>
+                    <a class="navbar-item is-family-code" href="../">blog :: (Science a, Programming a) => a </a>
                 </div>
             </div>
             <div class="navbar-end">
                 <div class="navbar-menu" id="navigation">
 
-                    <a class="navbar-item" href="./">
+                    <a class="navbar-item" href="../">
                         <span class="icon-text">
                             <span class="icon">
                                 <i class="fa fa-home"></i>
@@ -51,7 +51,7 @@
                         </span>
                     </a>
 
-                    <a class="navbar-item" href="./archive.html">
+                    <a class="navbar-item" href="../archive.html">
                         <span class="icon-text">
                             <span class="icon">
                                 <i class="fa fa-folder"></i>
@@ -65,29 +65,26 @@
 
         <div id="content" class="container is-max-tablet mt-6 mb-6">
             <div class="title is-spaced" id="title">
-                Home
+                Translating Bonito Nanopore Basecalling Models into Rust and the candle ML framework
             </div>
 
-            <div class="content is-medium">
-    <p>Welcome to my blog!</p>
-
-    <h4>Posts</h4>
-    <div class="content">
-    <ul>
-        
-        <li>
-            <a href="./posts/2025-10-16-bonito-rust.html">Translating Bonito Nanopore Basecalling Models into Rust and the candle ML framework</a> - October 16, 2025
-        </li>
-        
-        <li>
-            <a href="./posts/2015-08-23-example.html">example post</a> - August 23, 2015
-        </li>
-        
-    </ul>
+            <div class="subtitle">
+    Posted on October 16, 2025
+    
+    <p>by Brandon Saint-John</p>
+    
 </div>
 
-    <p>…or you can find more in the <a href="./archive.html">archives</a>.</p>
-
+<div class="content container">
+    <h2 id="install">Install</h2>
+<h2 id="download-data-with-bonito">Download data with bonito</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">bonito</span> download <span class="at">--training</span> <span class="at">--out_dir</span> bonito-out</span></code></pre></div>
+<h2 id="convert-to-safetensors">Convert to safetensors</h2>
+<p>candle Tensor read_npy causes issues</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">Err</span><span class="er">(</span><span class="ex">npy/npz</span> error unrecognized descr i2<span class="kw">)</span></span></code></pre></div>
+<p>Avoid having to load into memory completely
+npy-to-safetensors
+Need around 40+ GB for the conversion on my machine</p>
 </div>
         </div>
         <div class="footer mt-auto has-text-centered">
