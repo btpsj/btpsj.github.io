@@ -5,11 +5,11 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>blog :: (Science a, Programming a) => a - Home</title>
+    <title>blog :: (Science a, Programming a) => a - The little lessons learned while building an embedded driver in Rust</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📓</text></svg>">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link rel="stylesheet" type="text/css" href="./css/bulma.css">
-    <link rel="stylesheet" type="text/css" href="./css/syntax.css">
+    <link rel="stylesheet" type="text/css" href="../css/bulma.css">
+    <link rel="stylesheet" type="text/css" href="../css/syntax.css">
 </head>
 
 <body>
@@ -17,13 +17,13 @@
         <div class="navbar has-background-grey-darker" id="header">
             <div class="navbar-start">
                 <div class="navbar-brand" id="logo">
-                    <a class="navbar-item is-family-code" href="./">blog :: (Science a, Programming a) => a </a>
+                    <a class="navbar-item is-family-code" href="../">blog :: (Science a, Programming a) => a </a>
                 </div>
             </div>
             <div class="navbar-end">
                 <div class="navbar-menu" id="navigation">
 
-                    <a class="navbar-item" href="./">
+                    <a class="navbar-item" href="../">
                         <span class="icon-text">
                             <span class="icon">
                                 <i class="fa fa-home"></i>
@@ -50,7 +50,7 @@
                         </span>
                     </a>
 
-                    <a class="navbar-item" href="./archive.html">
+                    <a class="navbar-item" href="../archive.html">
                         <span class="icon-text">
                             <span class="icon">
                                 <i class="fa fa-folder"></i>
@@ -64,29 +64,30 @@
 
         <div id="content" class="container is-max-tablet mt-6 mb-6">
             <div class="title is-spaced" id="title">
-                Home
+                The little lessons learned while building an embedded driver in Rust
             </div>
 
-            <div class="content is-medium">
-    <p>Welcome to my blog!</p>
-
-    <h4>Posts</h4>
-    <div class="content">
-    <ul>
-        
-        <li>
-            <a href="./posts/2025-10-21-ds3502-lessons.html">The little lessons learned while building an embedded driver in Rust</a> - October 21, 2025
-        </li>
-        
-        <li>
-            <a href="./posts/2015-08-23-example.html">example post</a> - August 23, 2015
-        </li>
-        
-    </ul>
+            <div class="subtitle">
+    Posted on October 21, 2025
+    
 </div>
 
-    <p>…or you can find more in the <a href="./archive.html">archives</a>.</p>
-
+<div class="content container">
+    <p>I finally got the time to get my driver for the DS3502 digital potentiometer in shape to the point I felt fairly comfortable pushing it to crates.io. While it was very straightforward implementation wise, I took a little more time getting some details, that became more obvious as I started to wrap it all up. So I wanted to document a few of the things I figured out while getting this over the finish line.</p>
+<h3 id="single-readme.md-source-with-clean-doctests-with-cargo-rdme-and-its-ilk">Single README.md source with clean doctests with <code>cargo-rdme</code> and its ilk</h3>
+<p>When putting together the README.md for the crate, there were a few things I wanted it to have.</p>
+<ul>
+<li>Example usage code driver that is automatically tested with <code>cargo test</code></li>
+<li>Syncing the content with what is shown on crates.io with the GitHub repo README</li>
+</ul>
+<p>The first example that comes up that allows for doing this is to use <code>#[doc(include!("../README.md"))]</code> in your <code>lib.rs</code> which includes entire README.md into the documentation.</p>
+<p>One downside with this is that hidden parts of the doctest using <code>#</code> will still show up in the GitHub README.md and clutter the code example there.</p>
+<p>The fix is a tool that generates your README file based on the lib.rs docs. As of this writing</p>
+<h3 id="the-authors-field-on-the-cargo.toml-is-deprecated">The <code>authors</code> field on the Cargo.toml is deprecated</h3>
+<h3 id="cargo-watch-but-more-with-bacon-for-docs-and-more"><code>cargo-watch</code> but more with <code>bacon</code> for docs and more</h3>
+<h3 id="blocking-and-async-apis">Blocking and async APIs</h3>
+<h4 id="testing-blocking-and-async-apis-with-embedded-hal-mock">Testing blocking and async APIs with <code>embedded-hal-mock</code></h4>
+<h3 id="running-github-actions-locally-with-act">Running GitHub Actions locally with <code>act</code></h3>
 </div>
         </div>
         <div class="footer mt-auto has-text-centered">

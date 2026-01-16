@@ -1,0 +1,29 @@
+---
+title: The little lessons learned while building an embedded driver in Rust
+authors: Brandon Saint-John
+---
+
+I finally got the time to get my driver for the DS3502 digital potentiometer in shape to the point I felt fairly comfortable pushing it to crates.io. While it was very straightforward implementation wise, I took a little more time getting some details, that became more obvious as I started to wrap it all up. So I wanted to document a few of the things I figured out while getting this over the finish line.
+
+### Single README.md source with clean doctests with `cargo-rdme` and its ilk
+
+When putting together the README.md for the crate, there were a few things I wanted it to have.
+
+* Example usage code driver that is automatically tested with `cargo test`
+* Syncing the content with what is shown on crates.io with the GitHub repo README
+
+The first example that comes up that allows for doing this is to use `#[doc(include!("../README.md"))]` in your `lib.rs` which includes entire README.md into the documentation.
+
+One downside with this is that hidden parts of the doctest using `#` will still show up in the GitHub README.md and clutter the code example there.
+
+The fix is a tool that generates your README file based on the lib.rs docs. As of this writing
+
+### The `authors` field on the Cargo.toml is deprecated
+
+### `cargo-watch` but more with `bacon` for docs and more
+
+### Blocking and async APIs
+
+#### Testing blocking and async APIs with `embedded-hal-mock`
+
+### Running GitHub Actions locally with `act`
