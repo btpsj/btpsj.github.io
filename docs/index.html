@@ -7,42 +7,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>blog :: (Science a, Programming a) => a - Home</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/default.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
     <script>hljs.highlightAll();</script>
 </head>
 
 <body>
-    <div class="container hero is-fullheight">
-        <div class="navbar" id="header">
+    <div class="hero is-fullheight">
+        <div class="navbar has-background-grey-darker" id="header">
             <div class="navbar-start">
                 <div class="navbar-brand" id="logo">
-                    <a class="navbar-item is-family-monospace" href="./">blog :: (Science a, Programming a) => a </a>
+                    <a class="navbar-item is-family-code" href="./">blog :: (Science a, Programming a) => a </a>
                 </div>
             </div>
             <div class="navbar-end">
                 <div class="navbar-menu" id="navigation">
-                    <a class="navbar-item" href="./">Home</a>
-                    <a class="navbar-item" href="./about.html">About</a>
-                    <a class="navbar-item" href="./contact.html">Contact</a>
-                    <a class="navbar-item" href="./archive.html">Archive</a>
+
+                    <a class="navbar-item" href="./">
+                        <span class="icon-text">
+                            <span class="icon">
+                                <i class="fa fa-home"></i>
+                            </span>
+                            <span>Home</span>
+                        </span>
+                    </a>
+
+                    <a class="navbar-item" href="http://github.com/bsaintjo">
+                        <span class="icon-text">
+                            <span class="icon">
+                                <i class="fa fa-github"></i>
+                            </span>
+                            <span>GitHub</span>
+                        </span>
+                    </a>
+
+                    <a class="navbar-item" href="http://linkedin.com/in/saint-john">
+                        <span class="icon-text">
+                            <span class="icon">
+                                <i class="fa fa-linkedin"></i>
+                            </span>
+                            <span>LinkedIn</span>
+                        </span>
+                    </a>
+
+                    <a class="navbar-item" href="./archive.html">
+                        <span class="icon-text">
+                            <span class="icon">
+                                <i class="fa fa-folder"></i>
+                            </span>
+                            <span>Archive</span>
+                        </span>
+                    </a>
                 </div>
             </div>
         </div>
 
-        <div id="content">
-            <div class="title is-spaced m-3" id="title">
+        <div id="content" class="container is-max-tablet mt-6 mb-6">
+            <div class="title is-spaced" id="title">
                 Home
             </div>
 
-            <h2>Welcome</h2>
+            <div class="content is-medium">
+    <p>Welcome to my blog!</p>
 
-<p>Welcome to my blog!</p>
-
-<p>I've reproduced a list of recent posts here for your reading pleasure:</p>
-
-<h2>Posts</h2>
-<div class="content is-medium">
+    <h4>Posts</h4>
+    <div class="content">
     <ul>
         
         <li>
@@ -52,8 +82,9 @@
     </ul>
 </div>
 
-<p>…or you can find more in the <a href="./archive.html">archives</a>.</p>
+    <p>…or you can find more in the <a href="./archive.html">archives</a>.</p>
 
+</div>
         </div>
         <div class="footer mt-auto has-text-centered">
             <footer>
