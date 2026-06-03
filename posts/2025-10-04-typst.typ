@@ -2,22 +2,25 @@
 title: typst post
 ---
 
-#text(font: "New Computer Modern")[
-  = Background
-  In the case of glaciers, fluid
-  dynamics principles can be used
-  to understand how the movement
-  and behaviour of the ice is
-  influenced by factors such as
-  temperature, pressure, and the
-  presence of other fluids (such as
-  water).
-]
+#set text(
+  font: "New Computer Modern",
+  size: 2pt
+)
 
-#align(center, text(23pt)[
+= Background
+In the case of glaciers, fluid
+dynamics principles can be used
+to understand how the movement
+and behaviour of the ice is
+influenced by factors such as
+temperature, pressure, and the
+presence of other fluids (such as
+water).
+
+#align(center)[
   *A fluid dynamic model
   for glacier flow*
-])
+]
 
 
 #grid(
@@ -40,21 +43,43 @@ title: typst post
   #lorem(80)
 ]
 
+$
+a + b &= c \
+d &= e + f
+$
 
-// $ A = pi r^2$
 
-// $ "area" = pi dot "radius"^2 $
+$ A = pi r^2$
 
-// $ sum_(k=0)^n k
-//     &= 1 + ... + n \
-//     &= (n(n+1)) / 2 $
+$ "area" = pi dot "radius"^2 $
 
-// With content.
-// #circle[
-//   #set align(center + horizon)
-//   Automatically \
-//   sized to fit.
-// ]
+$ sum_(k=0)^n k
+    &= 1 + ... + n \
+    &= (n(n+1)) / 2 $
+
+With content.
+#circle[
+  #set align(center + horizon)
+  Automatically \
+  sized to fit.
+]
+
+#let ipa = [taɪpst]
+
+The canonical way to
+pronounce Typst is #ipa.
+
+#table(
+  columns: (1fr, 1fr),
+  [Name], [Typst],
+  [Pronunciation], ipa,
+)
+
+Einstein revolutionized physics @einstein1905.
+
+Several foundational works exist [@knuth1984; @shannon1948].
+
+#bibliography("../references.bib", title: "References", style: "springer-basic")
 
 // #image("../images/imag.png")
 
