@@ -1,6 +1,7 @@
 --------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
 import           Data.Monoid (mappend)
+import           System.FilePath (takeFileName)
 import           Hakyll
 
 
@@ -9,6 +10,10 @@ main :: IO ()
 main = hakyll $ do
     match "images/*" $ do
         route   idRoute
+        compile copyFileCompiler
+
+    match "resume-cv/cv.pdf" $ do
+        route   $ customRoute (takeFileName . toFilePath)
         compile copyFileCompiler
 
     match "css/*" $ do
