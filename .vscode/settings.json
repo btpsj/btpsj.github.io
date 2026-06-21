@@ -1,4 +1,5 @@
 {
   "haskell.manageHLS": "GHCup",
-  "haskell.upgradeGHCup": false
+  "haskell.upgradeGHCup": false,
+  "workbench.browser.dataStorage": "ephemeral"
 }
