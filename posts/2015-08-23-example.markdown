@@ -1,5 +1,6 @@
 ---
 title: example post
+comments: 2015-08-23-example
 ---
 
 Mauris in lorem nisl. Maecenas tempus facilisis ante, eget viverra nisl
