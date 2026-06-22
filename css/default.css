@@ -31,7 +31,10 @@ footer {
     padding-top: var(--pico-spacing);
     color: var(--pico-muted-color);
     font-size: 0.875em;
-    text-align: right;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--pico-spacing);
 }
 
 /* Vertically center the brand with the nav links so the logo sits
@@ -55,6 +58,13 @@ nav {
     color: var(--pico-muted-color);
     font-size: 0.875em;
     font-style: italic;
+}
+
+/* Employer disclaimer in the footer — smaller and constrained so it wraps
+   to a few lines on the left instead of stretching across the footer. */
+.disclaimer {
+    max-width: 24rem;
+    font-size: 0.6em;
 }
 
 /* Comment section (templates/post.html). */
