@@ -61,6 +61,11 @@ nav {
     font-style: italic;
 }
 
+/* Monospace navbar link (e.g. the literal "/uses" path). */
+.mono {
+    font-family: var(--pico-font-family-monospace);
+}
+
 /* Employer disclaimer in the footer — smaller and constrained so it wraps
    to a few lines on the left instead of stretching across the footer. */
 .disclaimer {
