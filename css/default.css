@@ -48,6 +48,7 @@ nav {
    text-decoration: none }` (left placement now comes from Pico's nav). */
 #logo a {
     color: var(--pico-color);
+    font-family: var(--pico-font-family-monospace);
     font-size: 1.125rem;
     font-weight: bold;
     text-decoration: none;
