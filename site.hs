@@ -20,7 +20,13 @@ main = hakyll $ do
         route   idRoute
         compile compressCssCompiler
 
-    match (fromList ["about.rst", "contact.markdown"]) $ do
+    match "btpsj/README.md" $ do
+        route   $ constRoute "about.html"
+        compile $ pandocCompiler
+            >>= loadAndApplyTemplate "templates/default.html" aboutCtx
+            >>= relativizeUrls
+
+    match "contact.markdown" $ do
         route   $ setExtension "html"
         compile $ pandocCompiler
             >>= loadAndApplyTemplate "templates/default.html" defaultContext
@@ -62,6 +68,13 @@ main = hakyll $ do
                 >>= relativizeUrls
 
     match "templates/*" $ compile templateBodyCompiler
+
+
+--------------------------------------------------------------------------------
+aboutCtx :: Context String
+aboutCtx =
+    constField "title" "About" `mappend`
+    defaultContext
 
 
 --------------------------------------------------------------------------------

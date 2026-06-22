@@ -1,3 +1,6 @@
 [submodule "resume-cv"]
 	path = resume-cv
 	url = https://github.com/btpsj/resume-cv.git
+[submodule "btpsj"]
+	path = btpsj
+	url = https://github.com/btpsj/btpsj.git
