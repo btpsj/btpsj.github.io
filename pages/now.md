@@ -12,7 +12,9 @@ A Rust-based hardware abstraction layer for the CXD5602 and Sony Spresense.
 
 ## Soldering
 
-Got a bunch of soldering practice kits. I have some downstream projects I'm thinking about but 
+Got a bunch of soldering practice kits. I have some downstream projects I'm thinking about but before messing with certain fine soldering like SMD, I need to practice with those.
+
+In particular, the Sony Spresense addon boards like the Extension board have a footprint(?) for an ARM debug connector port to solder the connector to, but these cost $50 USD + shipping at the current moment, and so need practice a bit before trying for the board itself.
 
 ## Technical Reading and Learning
 
