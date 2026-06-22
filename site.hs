@@ -25,7 +25,7 @@ main = hakyll $ do
             >>= loadAndApplyTemplate "templates/default.html" aboutCtx
             >>= relativizeUrls
 
-    match "uses.markdown" $ do
+    match "uses.md" $ do
         route   $ setExtension "html"
         compile $ pandocCompiler
             >>= loadAndApplyTemplate "templates/default.html" defaultContext
@@ -53,8 +53,8 @@ main = hakyll $ do
                 >>= relativizeUrls
 
 
-    match "index.html" $ do
-        route idRoute
+    match "index.md" $ do
+        route $ setExtension "html"
         compile $ do
             posts <- recentFirst =<< loadAll "posts/*"
             let indexCtx =
@@ -63,6 +63,7 @@ main = hakyll $ do
 
             getResourceBody
                 >>= applyAsTemplate indexCtx
+                >>= renderPandoc
                 >>= loadAndApplyTemplate "templates/default.html" indexCtx
                 >>= relativizeUrls
 
