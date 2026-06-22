@@ -25,8 +25,8 @@ main = hakyll $ do
             >>= loadAndApplyTemplate "templates/default.html" aboutCtx
             >>= relativizeUrls
 
-    match "uses.md" $ do
-        route   $ setExtension "html"
+    match "pages/uses.md" $ do
+        route   pagesRoute
         compile $ pandocCompiler
             >>= loadAndApplyTemplate "templates/default.html" defaultContext
             >>= relativizeUrls
@@ -53,8 +53,8 @@ main = hakyll $ do
                 >>= relativizeUrls
 
 
-    match "index.md" $ do
-        route $ setExtension "html"
+    match "pages/index.md" $ do
+        route pagesRoute
         compile $ do
             posts <- recentFirst =<< loadAll "posts/*"
             let indexCtx =
@@ -68,6 +68,14 @@ main = hakyll $ do
                 >>= relativizeUrls
 
     match "templates/*" $ compile templateBodyCompiler
+
+
+--------------------------------------------------------------------------------
+-- Route for sources under pages/: drop the directory and emit at the site
+-- root as .html (e.g. pages/uses.md -> uses.html).
+pagesRoute :: Routes
+pagesRoute =
+    gsubRoute "pages/" (const "") `composeRoutes` setExtension "html"
 
 
 --------------------------------------------------------------------------------

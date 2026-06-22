@@ -21,7 +21,7 @@ body {
    separating rule like the old div#header. */
 header {
     border-bottom: 1px solid var(--pico-muted-border-color);
-    margin-bottom: calc(var(--pico-spacing) * 2);
+    margin-bottom: var(--pico-spacing);
 }
 
 /* Footer: muted, right-aligned, top rule like the old div#footer. */
@@ -41,6 +41,7 @@ footer {
    inline with the rest of the navbar. */
 nav {
     align-items: center;
+    --pico-nav-element-spacing-vertical: 0.25rem;
 }
 
 /* Brand / logo link in the header — the Pico-token heir to the old
