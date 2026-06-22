@@ -34,7 +34,7 @@ main = hakyll $ do
     match "pages/now.md" $ do
         route   pagesRoute
         compile $ pandocCompiler
-            >>= loadAndApplyTemplate "templates/default.html" defaultContext
+            >>= loadAndApplyTemplate "templates/default.html" nowCtx
             >>= relativizeUrls
 
     match "posts/*" $ do
@@ -95,4 +95,13 @@ aboutCtx =
 postCtx :: Context String
 postCtx =
     dateField "date" "%B %e, %Y" `mappend`
+    defaultContext
+
+
+--------------------------------------------------------------------------------
+-- Context for the /now page: exposes an "updated" field from the source
+-- file's modification time, so the page advertises when it last changed.
+nowCtx :: Context String
+nowCtx =
+    modificationTimeField "updated" "%B %e, %Y" `mappend`
     defaultContext
