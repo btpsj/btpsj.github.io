@@ -1,7 +1,6 @@
 --------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
 import           Data.Monoid (mappend)
-import           System.FilePath (takeFileName)
 import           Hakyll
 
 
@@ -12,8 +11,8 @@ main = hakyll $ do
         route   idRoute
         compile copyFileCompiler
 
-    match "resume-cv/cv.pdf" $ do
-        route   $ customRoute (takeFileName . toFilePath)
+    match "resume-cv/ResumeCV_Blog.pdf" $ do
+        route   $ constRoute "cv.pdf"
         compile copyFileCompiler
 
     match "css/*" $ do
